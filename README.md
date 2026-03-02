@@ -41,4 +41,4 @@ ingestao_bronze
 ## Como executar
 1. Rodar `00_Setup` uma única vez para criar a infraestrutura
 2. Fazer upload dos CSVs no Volume `bike_store/landing/raw_files`
-3. Executar o job `job_ingestao_bronze` manualmente ou configurar retomada de disparo agendado
+3. Executar o job `job_bikes` manualmente ou configurar retomada de disparo agendado
