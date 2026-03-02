@@ -10,31 +10,35 @@ de cloud. Pense nesse projeto como um "Hello World" de Databricks focado em enge
 ## Fonte de Dados
 Arquivos CSV de uma loja de bicicletas fictícia, armazenados em Volume do Unity Catalog.
 
-## Arquitetura
-```
-bike_store/
-├── landing/raw_files   → Volume com os CSVs originais
-├── bronze/             → Tabelas brutas ingeridas dos CSVs
-├── silver/             → Tabelas limpas e tratadas
-└── gold/               → Tabelas agregadas para análise
-```
-
 ## Notebooks
 
-| Notebook | Descrição |
-|---|---|
-| `00_Setup` | Cria catálogo, schemas e volume no Unity Catalog |
-| `01_Ingestao_Bronze` | Lê os CSVs e salva como Delta Tables na camada Bronze |
-| `02_Tratamento_Silver` | Limpeza e padronização dos dados |
-| `03_Agregacao_Gold` | Agregações e regras de negócio |
+| Notebook | Camada | Descrição |
+|---|---|---|
+| `00_Setup` | - | Cria catálogo, schemas e volume no Unity Catalog |
+| `01_Ingestao_Bronze` | Bronze | Lê os CSVs e salva como Delta Tables na camada Bronze |
+| `02_Silver_Produtos` | Silver | Produtos enriquecidos com categoria, marca e estoque total |
+| `03_Silver_Pedidos` | Silver | Pedidos com status mapeado, vendedor, loja e valor total |
+| `04_Silver_Clientes` | Silver | Clientes filtrados com e-mail e telefone válidos |
+| `05_Gold_Vendas_Diarias` | Gold | Soma de vendas diárias de pedidos entregues no estado NY |
+| `06_Gold_Alertas_Pendentes` | Gold | Clientes com pedidos pendentes para notificação |
+| `99_Validacao_Silver` | - | Valida se todas as tabelas Silver foram criadas com sucesso |
+| `utils/qualidade_dados` | - | Funções utilitárias reutilizáveis de qualidade de dados |
 
 ## Jobs
 
-| Job | Notebook | Agendamento |
+| Job | Descrição | Agendamento |
 |---|---|---|
-| `job_ingestao_bronze` | `01_Ingestao_Bronze` | Diário **pausado** |
+| `job_bikes` | Pipeline completo Bronze → Silver → Gold | Diário às 08:00 — **pausado** |
+
+### Pipeline
+```
+ingestao_bronze
+├── silver_clientes  ┐
+├── silver_pedidos   ├── validate_silver ┬── gold_vendas_diarias
+└── silver_produtos  ┘                  └── gold_alertas_pendentes
+```
 
 ## Como executar
 1. Rodar `00_Setup` uma única vez para criar a infraestrutura
 2. Fazer upload dos CSVs no Volume `bike_store/landing/raw_files`
-3. Executar o job `job_ingestao_bronze` manualmente ou liberar o agendamento e aguardar
+3. Executar o job `job_ingestao_bronze` manualmente ou configurar retomada de disparo agendado
